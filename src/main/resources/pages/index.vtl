@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+    <head>
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    </head>
+    <body>
+    <header>
+        <nav class="width-limit">
+            <p style="display:inline">
+            <div id="logo" href="/"> <img src="/img/logo.png" style="display:block" align="left"></div>
+            <div id="name" style="display:block">SparkChat</div>
+            <div id="header-text" align="right">
+                <a class="github-button" href="https://github.com/Oscaz/Spark-Chat" data-size="large" data-show-count="true" aria-label="Star Oscaz/Spark-Chat on GitHub">Star</a>
+                <a href="/contact">Contact</a>
+            </div>
+            </p>
+        </nav>
+    </header>
+        <div id="roomControls">
+            <input id="checkbox" type="checkbox"/> Private?
+            <input id="channel_name" type="text" placeholder="Create a room"/>
+            <button id="join_general">Create / join chatroom</button>
+        </div>
+        <ul>
+            <div id="chatroominfo">
+                <li>Open Chatrooms:</li>
+            </div>
+            <div id="chatrooms">
+                <!-- Chat rooms inserted here: -->
+            </div>
+        </ul>
+
+        <script>
+//Establish the WebSocket connection and set up event handlers
+
+var waiting = true;
+
+var webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/chat");
+
+webSocket.onopen = function () {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", "http://127.0.0.1:4567/authenticate/", false ); // false for synchronous request
+    xmlHttp.send( null );
+    var authContent = xmlHttp.responseText;
+
+    var xmlRooms = new XMLHttpRequest();
+    xmlRooms.open("POST", "http://127.0.0.1:4567/chatrooms/", false );
+    xmlRooms.send( null );
+    var chatContent = xmlRooms.responseText;
+
+    console.log("SOCKET ID: " + authContent);
+
+    console.log("Chatrooms: " + chatContent);
+
+    var chatrooms = chatContent.split("/");
+
+    var auth = {
+        "type": "authenticate",
+        "contents": authContent
+    };
+
+    webSocket.send(JSON.stringify(auth));
+
+    var i;
+    console.log(chatrooms[0]);
+    if (chatrooms.length !== 0) {
+        for (i = 0; i < chatrooms.length; i++) {
+            if (chatrooms[i] === "") { continue; }
+            var number = chatrooms[i].split(":")[1];
+            var name = chatrooms[i].split(":")[0];
+            var button = '<li><button id="join_' + name + '" onclick="button(\'' + name + '\'' +
+                    ')">Join ' + name + ' </button> ' + number +' online</li>'
+            insert("chatrooms", button);
+            console.log(button);
+        }
+    }
+
+    waiting = false;
+};
+
+function button(channelName) {
+    if (waiting) {
+        console.log("Waiting...");
+        return;
+    }
+
+    var switchChannel = {
+        "type": "switch-channel",
+        "contents": channelName,
+        "privateRoom": document.getElementById("checkbox").checked
+    };
+
+    console.log(switchChannel);
+
+    webSocket.send(JSON.stringify(switchChannel));
+
+    window.onbeforeunload();
+    window.location.href = "http://127.0.0.1:4567/chatroom";
+}
+
+
+window.onbeforeunload = function() {
+    webSocket.onclose = function () {}; // disable onclose handler first
+    webSocket.close()
+};
+
+document.getElementById("channel_name").addEventListener("keypress", function (e) {
+    if (e.keyCode === 13) {
+        if (waiting) {
+            console.log("Waiting...");
+            return;
+        }
+
+        if (id("channel_name").value.trim() === "") {
+            return;
+        }
+
+        var switchChannel = {
+            "type": "switch-channel",
+            "contents": document.getElementById("channel_name").value,
+            "privateRoom": document.getElementById("checkbox").checked
+        };
+
+        webSocket.send(JSON.stringify(switchChannel));
+
+        window.onbeforeunload();
+        window.location.href = "http://127.0.0.1:4567/chatroom";
+    }
+});
+
+
+document.getElementById("join_general").addEventListener("click", function () {
+    if (waiting) {
+        console.log("Waiting...");
+        return;
+    }
+
+    if (id("channel_name").value.trim() === "") {
+        return;
+    }
+
+    var switchChannel = {
+        "type": "switch-channel",
+        "contents": document.getElementById("channel_name").value,
+        "privateRoom": document.getElementById("checkbox").checked
+    };
+
+    webSocket.send(JSON.stringify(switchChannel));
+
+    window.onbeforeunload();
+    window.location.href = "http://127.0.0.1:4567/chatroom";
+});
+
+function insert(targetId, message) {
+    id(targetId).insertAdjacentHTML("afterbegin", message);
+}
+
+function id(id) {
+    return document.getElementById(id);
+}
+
+</script>
+</body>
+</html>

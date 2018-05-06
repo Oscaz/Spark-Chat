@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<head>
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>WebsSockets</title>
+</head>
+<body>
+<header>
+    <nav class="width-limit">
+        <p style="display:inline">
+        <div id="logo" href="/"> <img src="/img/logo.png" style="display:block" align="left"></div>
+        <div id="name" style="display:block">SparkChat</div>
+        <div id="header-text" align="right">
+            <a class="github-button" href="https://github.com/Oscaz/Spark-Chat" data-size="large" data-show-count="true" aria-label="Star Oscaz/Spark-Chat on GitHub">Star</a>
+            <a href="/contact">Contact</a>
+        </div>
+        </p>
+    </nav>
+</header>
+
+<div class="container">
+    <div class="chat-container" id="chat-container">
+        <!-- Chat goes here -->
+    </div>
+    <div class="send-form">
+        <input id="message" type="text" placeholder="Your message">
+        <button id="send">Send</button>
+        <button id="leave">Leave chat</button>
+    </div>
+</div>
+
+
+<script>
+//Establish the WebSocket connection and set up event handlers
+
+var waiting = true;
+
+var webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/chat");
+
+webSocket.onopen = function () {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", "http://127.0.0.1:4567/authenticate/", false ); // false for synchronous request
+    xmlHttp.send( null );
+    var authContent = xmlHttp.responseText;
+
+    console.log("SOCKET ID: " + authContent);
+
+    var auth = {
+        "type": "authenticate",
+        "contents": authContent
+    };
+
+    webSocket.send(JSON.stringify(auth));
+
+    waiting = false;
+};
+
+webSocket.onmessage = function (msg) { updateChat(msg); };
+
+id("leave").addEventListener("click", function () {
+    if (waiting) {
+        return;
+    }
+    var leave = {
+        "type": "exit-chat",
+        "contents": "null"
+    };
+     webSocket.send(JSON.stringify(leave));
+    window.location.href = "http://127.0.0.1:4567/index";
+});
+
+//Send message if "Send" is clicked
+id("send").addEventListener("click", function () {
+    sendMessage(id("message").value);
+});
+
+//Send message if enter is pressed in the input field
+id("message").addEventListener("keypress", function (e) {
+    if (e.keyCode === 13) { sendMessage(id("message").value)}
+});
+
+//Send a message if it's not empty, then clear the input field
+function sendMessage(message) {
+    if (waiting) {
+        console.log("Waiting");
+        return;
+    }
+    if (message !== "") {
+        var data = {
+            "type": "chat-message",
+            "contents": message
+        };
+
+        webSocket.send(JSON.stringify(data));
+        id("message").value = "";
+    }
+}
+
+//Update the chat-panel, and the list of connected users
+function updateChat(msg) {
+
+    var data = JSON.parse(msg.data);
+
+    if (data.contentType != "chat-message") {
+        return;
+    }
+
+    insert("chat-container", data.contents);
+}
+
+//Helper function for inserting HTML as the first child of an element
+function insert(targetId, message) {
+    id(targetId).insertAdjacentHTML("afterbegin", message);
+}
+
+//Helper function for selecting element by id
+function id(id) {
+    return document.getElementById(id);
+}
+</script>
+</body>
+</html>

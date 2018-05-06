@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<head>
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header>
+    <nav class="width-limit">
+        <p style="display:inline">
+            <div id="logo" href="/"> <img src="/img/logo.png" style="display:block" align="left"></div>
+            <div id="name" style="display:block">SparkChat</div>
+            <div id="header-text" align="right">
+                <a class="github-button" href="https://github.com/Oscaz/Spark-Chat" data-size="large" data-show-count="true" aria-label="Star Oscaz/Spark-Chat on GitHub">Star</a>
+                <a href="/contact">Contact</a>
+            </div>
+        </p>
+    </nav>
+</header>
+    <div id="info">
+        <h3>Enter your username to continue.</h3>
+    </div>
+    <div id="username">
+        <input id="username-box" placeholder="Username"/>
+        <button id="username-button">Enter</button>
+    </div>
+<script>
+
+var waiting = true;
+
+var webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/chat");
+
+webSocket.onopen = function () {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", "http://127.0.0.1:4567/authenticate/", false); // false for synchronous request
+    xmlHttp.send(null);
+    var authContent = xmlHttp.responseText;
+
+    var auth = {
+        "type": "authenticate",
+        "contents": authContent
+    };
+
+    webSocket.send(JSON.stringify(auth));
+
+    waiting = false;
+}
+
+id("username-box").addEventListener("keypress", function (e) {
+    if (e.keyCode === 13) {
+        if (id("username-box").value.trim() === "") {
+            return;
+        }
+        console.log(id("username-box").value);
+        console.log(id("username-box").value.trim());
+        var username = {
+            "type": "put-username",
+            "contents": id("username-box").value.trim()
+        };
+
+        webSocket.send(JSON.stringify(username));
+
+        window.onbeforeunload();
+        window.location.href = "http://127.0.0.1:4567/index";
+    }
+});
+
+id("username-button").addEventListener("click", function () {
+    if (id("username-box").value.trim() === "") {
+        return;
+    }
+    console.log(id("username-box").value);
+    console.log(id("username-box").value.trim());
+    var username = {
+        "type": "put-username",
+        "contents": id("username-box").value.trim()
+    };
+
+    webSocket.send(JSON.stringify(username));
+
+    window.onbeforeunload();
+    window.location.href = "http://127.0.0.1:4567/index";
+});
+
+window.onbeforeunload = function() {
+    webSocket.onclose = function () {}; // disable onclose handler first
+    webSocket.close()
+};
+
+
+function id(id) {
+    return document.getElementById(id);
+}
+</script>
+</body>
+</html>
