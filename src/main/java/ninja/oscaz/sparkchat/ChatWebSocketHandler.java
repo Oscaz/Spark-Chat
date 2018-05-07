@@ -1,6 +1,7 @@
 package ninja.oscaz.sparkchat;
 
 import ninja.oscaz.sparkchat.pojo.WebSocketMessage;
+import ninja.oscaz.sparkchat.pojo.WebSocketPost;
 import ninja.oscaz.sparkchat.pojo.WebSocketSupportMessage;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -8,6 +9,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
+import java.io.IOException;
 import java.util.stream.IntStream;
 
 @WebSocket
@@ -64,7 +66,23 @@ public class ChatWebSocketHandler {
             Main.sockets.values().stream()
                     .filter(connection -> user.equals(connection.getSession()))
                     .findFirst()
-                    .ifPresent(connection -> connection.setUsername(message.getContents()));
+                    .ifPresent(connection -> {
+                        System.out.println("found user socket");
+                        if (Main.sockets.values().stream()
+                                .filter(target -> target.getUsername().equalsIgnoreCase(message.getContents()))
+                                .toArray().length == 0) {
+                            System.out.println("username-response false");
+                            connection.setUsername(message.getContents());
+                            WebSocketPost post = new WebSocketPost("username-response", "true");
+                            String json = Main.GSON.toJson(post);
+                            this.sendMessage(json, connection.getSession());
+                        } else {
+                            System.out.println("username-response true");
+                            WebSocketPost post = new WebSocketPost("username-response", "false");
+                            String json = Main.GSON.toJson(post);
+                            this.sendMessage(json, connection.getSession());
+                        }
+                    });
         }
 
         // If message json type is sending message to channel, find all users of common channel (including sender) and send message
@@ -114,6 +132,11 @@ public class ChatWebSocketHandler {
         IntStream.range(0, 3).forEach(i -> System.out.println());
         runnable.run();
         IntStream.range(0, 3).forEach(i -> System.out.println());
+    }
+
+    private void sendMessage(String message, Session session) {
+        try { session.getRemote().sendString(message); }
+        catch (IOException e) { throw new RuntimeException(e); }
     }
 
 }

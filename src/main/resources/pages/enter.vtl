@@ -44,7 +44,21 @@ webSocket.onopen = function () {
     webSocket.send(JSON.stringify(auth));
 
     waiting = false;
-}
+};
+
+webSocket.onmessage = function (message) {
+    var data = JSON.parse(message.data);
+    if (data.contentType != "username-response") {
+        return;
+    }
+    if (data.contents == "true") {
+        window.onbeforeunload();
+        window.location.href = "http://127.0.0.1:4567/index";
+    } else {
+        // Add js - sweet alert to inform username taken.
+        return;
+    }
+};
 
 id("username-box").addEventListener("keypress", function (e) {
     if (e.keyCode === 13) {
@@ -59,9 +73,6 @@ id("username-box").addEventListener("keypress", function (e) {
         };
 
         webSocket.send(JSON.stringify(username));
-
-        window.onbeforeunload();
-        window.location.href = "http://127.0.0.1:4567/index";
     }
 });
 
@@ -77,9 +88,6 @@ id("username-button").addEventListener("click", function () {
     };
 
     webSocket.send(JSON.stringify(username));
-
-    window.onbeforeunload();
-    window.location.href = "http://127.0.0.1:4567/index";
 });
 
 window.onbeforeunload = function() {
