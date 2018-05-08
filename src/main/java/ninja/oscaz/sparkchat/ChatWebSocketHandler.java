@@ -71,13 +71,13 @@ public class ChatWebSocketHandler {
                         if (Main.sockets.values().stream()
                                 .filter(target -> target.getUsername().equalsIgnoreCase(message.getContents()))
                                 .toArray().length == 0) {
-                            System.out.println("username-response false");
+                            System.out.println("username-response allowed");
                             connection.setUsername(message.getContents());
                             WebSocketPost post = new WebSocketPost("username-response", "true");
                             String json = Main.GSON.toJson(post);
                             this.sendMessage(json, connection.getSession());
                         } else {
-                            System.out.println("username-response true");
+                            System.out.println("username-response not allowed");
                             WebSocketPost post = new WebSocketPost("username-response", "false");
                             String json = Main.GSON.toJson(post);
                             this.sendMessage(json, connection.getSession());

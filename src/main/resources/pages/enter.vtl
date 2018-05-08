@@ -1,9 +1,5 @@
 <!DOCTYPE html>
-<head>
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/styles.css">
-</head>
+<head> </head>
 <body>
 <header>
     <nav class="width-limit">
@@ -47,6 +43,7 @@ webSocket.onopen = function () {
 };
 
 webSocket.onmessage = function (message) {
+    console.log("onmessage");
     var data = JSON.parse(message.data);
     if (data.contentType != "username-response") {
         return;
@@ -55,12 +52,12 @@ webSocket.onmessage = function (message) {
         window.onbeforeunload();
         window.location.href = "http://127.0.0.1:4567/index";
     } else {
-        // Add js - sweet alert to inform username taken.
         return;
     }
 };
 
 id("username-box").addEventListener("keypress", function (e) {
+    console.log("enter key");
     if (e.keyCode === 13) {
         if (id("username-box").value.trim() === "") {
             return;
@@ -77,6 +74,7 @@ id("username-box").addEventListener("keypress", function (e) {
 });
 
 id("username-button").addEventListener("click", function () {
+    console.log("button clicked");
     if (id("username-box").value.trim() === "") {
         return;
     }
