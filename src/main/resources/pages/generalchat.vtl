@@ -66,8 +66,17 @@ id("leave").addEventListener("click", function () {
         "type": "exit-chat",
         "contents": "null"
     };
-     webSocket.send(JSON.stringify(leave));
-    window.location.href = "http://127.0.0.1:4567/index";
+    swal({
+        title: "Success!",
+        text: "Sending you through...",
+        icon: "success",
+        button: "Processing..."
+    });
+
+    setTimeout(function() {
+        webSocket.send(JSON.stringify(leave));
+        window.location.href = "http://127.0.0.1:4567/index";
+    }, 500);
 });
 
 //Send message if "Send" is clicked

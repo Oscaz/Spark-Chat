@@ -48,10 +48,6 @@ webSocket.onopen = function () {
     xmlRooms.send( null );
     var chatContent = xmlRooms.responseText;
 
-    console.log("SOCKET ID: " + authContent);
-
-    console.log("Chatrooms: " + chatContent);
-
     var chatrooms = chatContent.split("/");
 
     var auth = {
@@ -62,7 +58,6 @@ webSocket.onopen = function () {
     webSocket.send(JSON.stringify(auth));
 
     var i;
-    console.log(chatrooms[0]);
     if (chatrooms.length !== 0) {
         for (i = 0; i < chatrooms.length; i++) {
             if (chatrooms[i] === "") { continue; }
@@ -71,7 +66,6 @@ webSocket.onopen = function () {
             var button = '<li><button id="join_' + name + '" onclick="button(\'' + name + '\'' +
                     ')">Join ' + name + ' </button> ' + number +' online</li>'
             insert("chatrooms", button);
-            console.log(button);
         }
     }
 
@@ -90,12 +84,18 @@ function button(channelName) {
         "privateRoom": document.getElementById("checkbox").checked
     };
 
-    console.log(switchChannel);
-
     webSocket.send(JSON.stringify(switchChannel));
 
-    window.onbeforeunload();
-    window.location.href = "http://127.0.0.1:4567/chatroom";
+    swal({
+        title: "Success!",
+        text: "Sending you through...",
+        icon: "success",
+        button: "Processing..."
+    });
+    setTimeout(function() {
+        window.onbeforeunload();
+        window.location.href = "http://127.0.0.1:4567/chatroom";
+    }, 500);
 }
 
 
@@ -123,8 +123,16 @@ document.getElementById("channel_name").addEventListener("keypress", function (e
 
         webSocket.send(JSON.stringify(switchChannel));
 
-        window.onbeforeunload();
-        window.location.href = "http://127.0.0.1:4567/chatroom";
+        swal({
+            title: "Success!",
+            text: "Sending you through...",
+            icon: "success",
+            button: "Processing..."
+        });
+        setTimeout(function() {
+            window.onbeforeunload();
+            window.location.href = "http://127.0.0.1:4567/chatroom";
+        }, 500);
     }
 });
 
@@ -147,8 +155,16 @@ document.getElementById("join_general").addEventListener("click", function () {
 
     webSocket.send(JSON.stringify(switchChannel));
 
-    window.onbeforeunload();
-    window.location.href = "http://127.0.0.1:4567/chatroom";
+    swal({
+        title: "Success!",
+        text: "Sending you through...",
+        icon: "success",
+        button: "Processing..."
+    });
+    setTimeout(function() {
+        window.onbeforeunload();
+        window.location.href = "http://127.0.0.1:4567/chatroom";
+    }, 500);
 });
 
 function insert(targetId, message) {

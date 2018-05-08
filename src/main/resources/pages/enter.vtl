@@ -49,10 +49,23 @@ webSocket.onmessage = function (message) {
         return;
     }
     if (data.contents == "true") {
-        window.onbeforeunload();
-        window.location.href = "http://127.0.0.1:4567/index";
+        swal({
+            title: "Success!",
+            text: "Sending you through...",
+            icon: "success",
+            button: "Processing..."
+        });
+        setTimeout(function() {
+            window.onbeforeunload();
+            window.location.href = "http://127.0.0.1:4567/index";
+        }, 500);
     } else {
-        return;
+        swal({
+            title: "Error!",
+            text: "That username is either unavailable or currently in use!",
+            icon: "error",
+            button: "Ok"
+        });
     }
 };
 
@@ -60,10 +73,14 @@ id("username-box").addEventListener("keypress", function (e) {
     console.log("enter key");
     if (e.keyCode === 13) {
         if (id("username-box").value.trim() === "") {
+            swal({
+                title: "Error!",
+                text: "That username is either unavailable or currently in use!",
+                icon: "error",
+                button: "Ok"
+            });
             return;
         }
-        console.log(id("username-box").value);
-        console.log(id("username-box").value.trim());
         var username = {
             "type": "put-username",
             "contents": id("username-box").value.trim()
@@ -76,10 +93,14 @@ id("username-box").addEventListener("keypress", function (e) {
 id("username-button").addEventListener("click", function () {
     console.log("button clicked");
     if (id("username-box").value.trim() === "") {
+        swal({
+            title: "Error!",
+            text: "Invalid username!",
+            icon: "error",
+            button: "Ok"
+        });
         return;
     }
-    console.log(id("username-box").value);
-    console.log(id("username-box").value.trim());
     var username = {
         "type": "put-username",
         "contents": id("username-box").value.trim()
