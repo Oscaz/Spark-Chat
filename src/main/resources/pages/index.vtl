@@ -19,7 +19,7 @@
         <div id="roomControls">
             <input id="checkbox" type="checkbox"/> Private?
             <input id="channel_name" type="text" placeholder="Create a room"/>
-            <button id="join_general">Create / join chatroom</button>
+            <button id="join_general" class="button-format">Create / join chatroom</button>
         </div>
         <ul>
             <div id="chatroominfo">
@@ -63,8 +63,8 @@ webSocket.onopen = function () {
             if (chatrooms[i] === "") { continue; }
             var number = chatrooms[i].split(":")[1];
             var name = chatrooms[i].split(":")[0];
-            var button = '<li><button id="join_' + name + '" onclick="button(\'' + name + '\'' +
-                    ')">Join ' + name + ' </button> ' + number +' online</li>'
+            var button = '<li><button id="join_' + name + '" class="button-format" onclick="button(\'' + name + '\'' +
+                    ')">Join ' + name + ' </button> ' + number +' online</li>';
             insert("chatrooms", button);
         }
     }
