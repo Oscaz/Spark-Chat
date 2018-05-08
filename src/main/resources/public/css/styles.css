@@ -54,6 +54,29 @@ header li {
     list-style-type: none;
 }
 
+.button-format {
+    background-color:#295fff;
+    -moz-border-radius:28px;
+    -webkit-border-radius:28px;
+    border-radius:28px;
+    border:1px solid #ffffff;
+    display:inline-block;
+    cursor:pointer;
+    color:#ffffff;
+    font-size:16px;
+    padding:4px 10px;
+    text-decoration:none;
+    text-shadow:0 1px 0 #000000;
+}
+.button-format:hover {
+    background-color:#8a75ff;
+}
+.button-format:active {
+    position:relative;
+    top:1px;
+}
+
+
 #chatControls {
     text-align: center;
     padding-top: 150px;
@@ -102,7 +125,7 @@ header li {
 .container {
     text-align: center;
     margin-top: 200px;
-    width: 370px;
+    width: 380px;
     height: 300px;
     border: solid 1px #ccc;
     box-sizing: border-box;
