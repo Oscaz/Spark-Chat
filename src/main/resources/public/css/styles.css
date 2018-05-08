@@ -18,28 +18,6 @@ body {
     padding-top: 10px;
 }
 
-.button-format {
-    background-color:#5c7dff;
-    -moz-border-radius:24px;
-    -webkit-border-radius:24px;
-    border-radius:24px;
-    display:inline-block;
-    cursor:pointer;
-    color:#ffffff;
-    font-size:16px;
-    padding:4px 10px;
-    text-decoration:none;
-    text-shadow:0 0 0 #000000;
-}
-
-.button-format:hover {
-    background-color:#938fff;
-}
-.button-format:active {
-    position:relative;
-    top:1px;
-}
-
 #info h3 {
     font: "Courier New";
     color: #5a6268;
@@ -124,7 +102,7 @@ header li {
 .container {
     text-align: center;
     margin-top: 200px;
-    width: 380px;
+    width: 370px;
     height: 300px;
     border: solid 1px #ccc;
     box-sizing: border-box;
