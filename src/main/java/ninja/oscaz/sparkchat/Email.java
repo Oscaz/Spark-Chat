@@ -9,7 +9,7 @@ public class Email {
 
     private Email() { throw new IllegalStateException("Cannot be instantiated!"); }
 
-    // Utility method for sending a support email from and to our gmail account.
+    // Utility method for sending a support email from and to our own gmail account.
     static void sendToSelf(String subject, String contents) {
         final String adress = "sparkchatist@gmail.com";
         final String password = "sparksupport";

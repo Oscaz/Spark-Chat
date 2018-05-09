@@ -15,7 +15,7 @@ import java.util.stream.IntStream;
 @WebSocket
 public class ChatWebSocketHandler {
 
-    // Triggers on web socket connecting
+    // Triggers on web socket connecting, debugs.
     @OnWebSocketConnect
     public void onConnect(Session user) throws Exception {
         print(() -> System.out.println("Session started, user is " + user));
@@ -24,12 +24,14 @@ public class ChatWebSocketHandler {
     // Triggers on web socket closing, if user in room & not currently switching room, leave chat
     @OnWebSocketClose
     public void onClose(Session user, int statusCode, String reason) {
-
+        // Find socket equal to socket closer
         Main.sockets.values().stream()
                 .filter(connection -> user.equals(connection.getSession()))
                 .findFirst()
                 .ifPresent(connection -> {
+                    // If they are in transit return
                     if (connection.isSwitching()) return;
+                    // Else, take their channel and inform they have left.
                     Main.broadcastMessage(null, connection.getChannel(), connection.getUsername() + " left the chat");
                     connection.setChannel("");
                 });
@@ -41,7 +43,6 @@ public class ChatWebSocketHandler {
     public void onMessage(Session user, String data) {
         // If message json type is support, trigger email.
         if (Main.GSON.fromJson(data, WebSocketMessage.class).getType().equalsIgnoreCase("support")) {
-            System.out.println("Sending email");
             WebSocketSupportMessage message = Main.GSON.fromJson(data, WebSocketSupportMessage.class);
             Email.sendToSelf("Support suggestion", "From " + message.getName() + " (" + message.getEmail() + ")" + "\n" +
                        message.getMessage()
@@ -55,7 +56,11 @@ public class ChatWebSocketHandler {
 
         // If message json type is authenticate, return socket-id to associate with session
         if (message.getType().equalsIgnoreCase("authenticate")) {
+            // update socket to fit authentication uuid
             Main.sockets.get(message.getContents()).setSession(user);
+            // Set boolean switching so when user leaves chat room unannounced,
+            // We know that they are actually in transit (between index and chatroom)
+            // and not leaving as it appears.
             if (Main.sockets.get(message.getContents()).isSwitching()) {
                 Main.sockets.get(message.getContents()).setSwitching(false);
             }
@@ -63,33 +68,32 @@ public class ChatWebSocketHandler {
 
         // If message json type is choosing username, change LiveSocketConnection username to input
         else if (message.getType().equalsIgnoreCase("put-username")) {
+            // Find LiveSocketConnection that has session equal to currently requesting session
             Main.sockets.values().stream()
                     .filter(connection -> user.equals(connection.getSession()))
                     .findFirst()
                     .ifPresent(connection -> {
+                        // if nobody else is in use of the username (if self is in use it goes to else close)
                         if (Main.sockets.values().stream()
                                 .filter(target -> target.getUsername().equalsIgnoreCase(message.getContents()))
                                 .toArray().length == 0) {
-                            System.out.println("true post");
                             connection.setUsername(message.getContents());
                             WebSocketPost post = new WebSocketPost("username-response", "true");
                             String json = Main.GSON.toJson(post);
                             this.sendMessage(json, connection.getSession());
                         } else {
-                            // Checking if user-name belongs to self (to front page without warning)
+
                             Main.sockets.values().stream()
                                 .filter(target -> target.getSession() == connection.getSession())
                                 .findFirst()
                                 .ifPresent(target -> {
-                                    System.out.println("is present");
+                                    // Checking if user-name belongs to self (caused by going to front page without warning)
                                     if (target.getUsername().equalsIgnoreCase(connection.getUsername())) {
-                                        System.out.println("username equal true");
                                         connection.setUsername(message.getContents());
                                         WebSocketPost post = new WebSocketPost("username-response", "true");
                                         String json = Main.GSON.toJson(post);
                                         this.sendMessage(json, connection.getSession());
                                     } else {
-                                        System.out.println("false post");
                                         WebSocketPost post = new WebSocketPost("username-response", "false");
                                         String json = Main.GSON.toJson(post);
                                         this.sendMessage(json, connection.getSession());
@@ -104,6 +108,7 @@ public class ChatWebSocketHandler {
             Main.sockets.values().stream()
                     .filter(connection -> user.equals(connection.getSession()))
                     .findFirst()
+                    // call utility method to broadcast message from arg0 (connection username), arg1 (channel), arg2 (message contents)
                     .ifPresent(connection -> Main.broadcastMessage(connection, connection.getChannel(), message.getContents()));
         }
 
@@ -148,6 +153,7 @@ public class ChatWebSocketHandler {
         IntStream.range(0, 3).forEach(i -> System.out.println());
     }
 
+    // Util method to send session a message (json)
     private void sendMessage(String message, Session session) {
         try { session.getRemote().sendString(message); }
         catch (IOException e) { throw new RuntimeException(e); }

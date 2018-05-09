@@ -6,6 +6,8 @@ import java.util.UUID;
 
 class LiveSocketConnection {
 
+    // POJO for storing information on a user such as channel, username, socketid, session, in transit and is room private.
+
     private final String socketId = UUID.randomUUID().toString();
     private String username;
     private String channel;
