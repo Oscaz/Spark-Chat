@@ -49,6 +49,7 @@ webSocket.onmessage = function (message) {
         return;
     }
     if (data.contents == "true") {
+        console.log("true");
         swal({
             title: "Success!",
             text: "Sending you through...",
@@ -59,7 +60,8 @@ webSocket.onmessage = function (message) {
             window.onbeforeunload();
             window.location.href = "http://127.0.0.1:4567/index";
         }, 500);
-    } else {
+    } else if (data.contents == "false") {
+        console.log("false");
         swal({
             title: "Error!",
             text: "That username is either unavailable or currently in use!",

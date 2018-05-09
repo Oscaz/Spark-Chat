@@ -67,20 +67,34 @@ public class ChatWebSocketHandler {
                     .filter(connection -> user.equals(connection.getSession()))
                     .findFirst()
                     .ifPresent(connection -> {
-                        System.out.println("found user socket");
                         if (Main.sockets.values().stream()
                                 .filter(target -> target.getUsername().equalsIgnoreCase(message.getContents()))
                                 .toArray().length == 0) {
-                            System.out.println("username-response allowed");
+                            System.out.println("true post");
                             connection.setUsername(message.getContents());
                             WebSocketPost post = new WebSocketPost("username-response", "true");
                             String json = Main.GSON.toJson(post);
                             this.sendMessage(json, connection.getSession());
                         } else {
-                            System.out.println("username-response not allowed");
-                            WebSocketPost post = new WebSocketPost("username-response", "false");
-                            String json = Main.GSON.toJson(post);
-                            this.sendMessage(json, connection.getSession());
+                            // Checking if user-name belongs to self (to front page without warning)
+                            Main.sockets.values().stream()
+                                .filter(target -> target.getSession() == connection.getSession())
+                                .findFirst()
+                                .ifPresent(target -> {
+                                    System.out.println("is present");
+                                    if (target.getUsername().equalsIgnoreCase(connection.getUsername())) {
+                                        System.out.println("username equal true");
+                                        connection.setUsername(message.getContents());
+                                        WebSocketPost post = new WebSocketPost("username-response", "true");
+                                        String json = Main.GSON.toJson(post);
+                                        this.sendMessage(json, connection.getSession());
+                                    } else {
+                                        System.out.println("false post");
+                                        WebSocketPost post = new WebSocketPost("username-response", "false");
+                                        String json = Main.GSON.toJson(post);
+                                        this.sendMessage(json, connection.getSession());
+                                    }
+                                });
                         }
                     });
         }
