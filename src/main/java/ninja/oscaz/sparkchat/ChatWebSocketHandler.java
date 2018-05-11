@@ -2,7 +2,6 @@ package ninja.oscaz.sparkchat;
 
 import ninja.oscaz.sparkchat.pojo.WebSocketMessage;
 import ninja.oscaz.sparkchat.pojo.WebSocketPost;
-import ninja.oscaz.sparkchat.pojo.WebSocketSupportMessage;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -31,7 +30,9 @@ public class ChatWebSocketHandler {
                 .ifPresent(connection -> {
                     // If they are in transit return
                     if (connection.isSwitching()) return;
-                    // Else, take their channel and inform they have left.
+                    // If they are not in a channel return
+                    if (connection.getChannel().equals("")) return;
+                    // Else, reset their channel and inform they have left.
                     Main.broadcastMessage(null, connection.getChannel(), connection.getUsername() + " left the chat");
                     connection.setChannel("");
                 });
@@ -41,21 +42,27 @@ public class ChatWebSocketHandler {
     // Triggers when data is passed, known as a websocketmessage
     @OnWebSocketMessage
     public void onMessage(Session user, String data) {
-        // If message json type is support, trigger email.
-        if (Main.GSON.fromJson(data, WebSocketMessage.class).getType().equalsIgnoreCase("support")) {
-            WebSocketSupportMessage message = Main.GSON.fromJson(data, WebSocketSupportMessage.class);
-            Email.sendToSelf("Support suggestion", "From " + message.getName() + " (" + message.getEmail() + ")" + "\n" +
-                       message.getMessage()
-            );
-            return;
-        }
+
 
         System.out.println(data);
         WebSocketMessage message = Main.GSON.fromJson(data, WebSocketMessage.class);
         System.out.println(message);
 
+        // If message json type is support, trigger email.
+        if (message.getType().equalsIgnoreCase("support")) {
+            // Order is split by '$', [0] is message, [1] is email, [2] is name
+            String[] support = message.getContents().split("\\$");
+            if (support.length != 3) {
+                return;
+            }
+            Email.sendToSelf("Suggestion from " + support[2]
+                    , "From " + support[2] + " (" + support[1] + ")\n" +
+                    support[0]
+            );
+        }
+
         // If message json type is authenticate, return socket-id to associate with session
-        if (message.getType().equalsIgnoreCase("authenticate")) {
+        else if (message.getType().equalsIgnoreCase("authenticate")) {
             // update socket to fit authentication uuid
             Main.sockets.get(message.getContents()).setSession(user);
             // Set boolean switching so when user leaves chat room unannounced,
@@ -77,28 +84,22 @@ public class ChatWebSocketHandler {
                         if (Main.sockets.values().stream()
                                 .filter(target -> target.getUsername().equalsIgnoreCase(message.getContents()))
                                 .toArray().length == 0) {
+                            System.out.println("length 0 call");
                             connection.setUsername(message.getContents());
                             WebSocketPost post = new WebSocketPost("username-response", "true");
                             String json = Main.GSON.toJson(post);
                             this.sendMessage(json, connection.getSession());
                         } else {
-
-                            Main.sockets.values().stream()
-                                .filter(target -> target.getSession() == connection.getSession())
-                                .findFirst()
-                                .ifPresent(target -> {
-                                    // Checking if user-name belongs to self (caused by going to front page without warning)
-                                    if (target.getUsername().equalsIgnoreCase(connection.getUsername())) {
-                                        connection.setUsername(message.getContents());
-                                        WebSocketPost post = new WebSocketPost("username-response", "true");
-                                        String json = Main.GSON.toJson(post);
-                                        this.sendMessage(json, connection.getSession());
-                                    } else {
-                                        WebSocketPost post = new WebSocketPost("username-response", "false");
-                                        String json = Main.GSON.toJson(post);
-                                        this.sendMessage(json, connection.getSession());
-                                    }
-                                });
+                            if (connection.getUsername().equalsIgnoreCase(message.getContents())) {
+                                // More efficiency, don't need to re-set username if already set.
+                                WebSocketPost post = new WebSocketPost("username-response", "true");
+                                String json = Main.GSON.toJson(post);
+                                this.sendMessage(json, connection.getSession());
+                            } else {
+                                WebSocketPost post = new WebSocketPost("username-response", "false");
+                                String json = Main.GSON.toJson(post);
+                                this.sendMessage(json, connection.getSession());
+                            }
                         }
                     });
         }
@@ -114,14 +115,26 @@ public class ChatWebSocketHandler {
 
         // If message json type is switch-channel, set channel in LiveSocketConnection to input,
         // and set boolean switching to true, so as not to trigger a leave event within method onClose.
-        // When user reconnects to said channel in page /generalchat, set switching to false to allow leaving.
+        // When user reconnects to said channel in page /generalchat, set switching to false to allow
+        // leaving with notifications.
         else if (message.getType().equalsIgnoreCase("switch-channel")) {
             Main.sockets.values().stream()
                     .filter(connection -> user.equals(connection.getSession()))
                     .findFirst()
                     .ifPresent(connection -> {
                         connection.setSwitching(true);
-                        connection.setPrivate(message.isPrivateRoom());
+
+                        // Setting private room based on split after $ sign. (boolean)
+                        if (message.getContents().split("\\$").length != 2) {
+                            connection.setPrivate(false);
+                        } else if (message.getContents().split("\\$")[1].equalsIgnoreCase("true")) {
+                            connection.setPrivate(true);
+                        } else if (message.getContents().split("\\$")[1].equalsIgnoreCase("false")) {
+                            connection.setPrivate(false);
+                        }
+
+                        message.setContents(message.getContents().split("\\$")[0]);
+
                         Main.sockets.values().forEach(socket -> {
                             if (socket.getChannel().equalsIgnoreCase(message.getContents().toLowerCase())) {
                                 if (socket.isPrivate()) connection.setPrivate(true);
@@ -146,7 +159,7 @@ public class ChatWebSocketHandler {
     }
 
 
-    // Debug print method for debug.
+    // Print method for debug.
     private void print(Runnable runnable) {
         IntStream.range(0, 3).forEach(i -> System.out.println());
         runnable.run();

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <head> </head>
 <body>
+<!-- Header containing logo, name, and links.-->
 <header>
     <nav class="width-limit">
         <p style="display:inline">
@@ -13,25 +14,33 @@
         </p>
     </nav>
 </header>
+    <!-- Div containing instructions -->
     <div id="info">
         <h3>Enter your username to continue.</h3>
     </div>
+    <!-- Div that contains input box for username and button to enter-->
     <div id="username">
         <input id="username-box" placeholder="Username"/>
         <button id="username-button" class="button-format">Enter</button>
     </div>
 <script>
 
+// variable to make sure websocket is open before sending messages
 var waiting = true;
 
+// Websocket variable to send messages through to java
 var webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/chat");
 
+
+// function triggering on the websocket opening (when a stable connection is made)
 webSocket.onopen = function () {
+    // Authenticating for socket id (auth token)
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", "http://127.0.0.1:4567/authenticate/", false); // false for synchronous request
     xmlHttp.send(null);
     var authContent = xmlHttp.responseText;
 
+    // json varialbe to send authentication variable to java (so it can associate a session with socket id)
     var auth = {
         "type": "authenticate",
         "contents": authContent
@@ -39,29 +48,36 @@ webSocket.onopen = function () {
 
     webSocket.send(JSON.stringify(auth));
 
+    // set variable to false to indicate that the websocket is open and ready to use
     waiting = false;
 };
 
 webSocket.onmessage = function (message) {
-    console.log("onmessage");
+    // json variable received from websocket
     var data = JSON.parse(message.data);
+    // if the content-type is not a response to a username being valid, return.
     if (data.contentType != "username-response") {
         return;
     }
+    // If the contents are true (yes the username is valid / available)
+    // proceed to next page and play success animation using sweetalert
     if (data.contents == "true") {
-        console.log("true");
         swal({
             title: "Success!",
             text: "Sending you through...",
             icon: "success",
             button: "Processing..."
         });
+        // Allow 500 ms for animation to play
         setTimeout(function() {
+            // close socket
             window.onbeforeunload();
+            // switch pages
             window.location.href = "http://127.0.0.1:4567/index";
         }, 500);
-    } else if (data.contents == "false") {
-        console.log("false");
+    }
+    // If the contents are false, (username is invalid / unavailable), play error animation and return.
+    else if (data.contents == "false") {
         swal({
             title: "Error!",
             text: "That username is either unavailable or currently in use!",
@@ -71,8 +87,11 @@ webSocket.onmessage = function (message) {
     }
 };
 
+// Search for keypress while inside username-box input
 id("username-box").addEventListener("keypress", function (e) {
+    // If key is enter
     if (e.keyCode === 13) {
+        // check if box is empty, if so, error: invalid username and return
         if (id("username-box").value.trim() === "") {
             swal({
                 title: "Error!",
@@ -82,6 +101,7 @@ id("username-box").addEventListener("keypress", function (e) {
             });
             return;
         }
+        // otherwise, send username through websocket and await response
         var username = {
             "type": "put-username",
             "contents": id("username-box").value.trim()
@@ -91,7 +111,9 @@ id("username-box").addEventListener("keypress", function (e) {
     }
 });
 
+// Search for clicks of button labelled Enter
 id("username-button").addEventListener("click", function () {
+    // check if input box is empty, if so, error: invalid username and return
     if (id("username-box").value.trim() === "") {
         swal({
             title: "Error!",
@@ -101,6 +123,7 @@ id("username-button").addEventListener("click", function () {
         });
         return;
     }
+    // otherwise, send username through websocket and await response
     var username = {
         "type": "put-username",
         "contents": id("username-box").value.trim()
@@ -109,12 +132,13 @@ id("username-button").addEventListener("click", function () {
     webSocket.send(JSON.stringify(username));
 });
 
+// function to close websocket
 window.onbeforeunload = function() {
     webSocket.onclose = function () {}; // disable onclose handler first
     webSocket.close()
 };
 
-
+// helper function to get element of page by id
 function id(id) {
     return document.getElementById(id);
 }

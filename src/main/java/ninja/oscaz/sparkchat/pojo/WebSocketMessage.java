@@ -8,10 +8,9 @@ public class WebSocketMessage {
     private String contents;
     private boolean privateRoom;
 
-    public WebSocketMessage(String type, String contents, boolean privateRoom) {
+    public WebSocketMessage(String type, String contents) {
         this.type = type;
         this.contents = contents;
-        this.privateRoom = privateRoom;
     }
 
     public String getType() {
