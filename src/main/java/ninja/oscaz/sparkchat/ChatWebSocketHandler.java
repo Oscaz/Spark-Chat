@@ -82,24 +82,19 @@ public class ChatWebSocketHandler {
                     .ifPresent(connection -> {
                         // if nobody else is in use of the username (if self is in use it goes to else close)
                         if (Main.sockets.values().stream()
-                                .filter(target -> target.getUsername().equalsIgnoreCase(message.getContents()))
+                                .filter(target -> target.getUsername().equalsIgnoreCase(message.getContents().split("\\$")[0]))
                                 .toArray().length == 0) {
-                            System.out.println("length 0 call");
-                            connection.setUsername(message.getContents());
+                            connection.setUsername(message.getContents().split("\\$")[0]);
+                            connection.setAvatar(Integer.parseInt(message.getContents().split("\\$")[1]));
                             WebSocketPost post = new WebSocketPost("username-response", "true");
                             String json = Main.GSON.toJson(post);
                             this.sendMessage(json, connection.getSession());
                         } else {
-                            if (connection.getUsername().equalsIgnoreCase(message.getContents())) {
-                                // More efficiency, don't need to re-set username if already set.
-                                WebSocketPost post = new WebSocketPost("username-response", "true");
-                                String json = Main.GSON.toJson(post);
-                                this.sendMessage(json, connection.getSession());
-                            } else {
-                                WebSocketPost post = new WebSocketPost("username-response", "false");
-                                String json = Main.GSON.toJson(post);
-                                this.sendMessage(json, connection.getSession());
-                            }
+                            WebSocketPost post = new WebSocketPost("username-response",
+                                    connection.getUsername().equalsIgnoreCase(
+                                    message.getContents().split("\\$")[0]) ? "true" : "false");
+                            String json = Main.GSON.toJson(post);
+                            this.sendMessage(json, connection.getSession());
                         }
                     });
         }

@@ -1,29 +1,38 @@
-<!DOCTYPE html>
-<head> </head>
 <body>
-<!-- Header containing logo, name, and links.-->
-<header>
-    <nav class="width-limit">
-        <p style="display:inline">
-            <div id="logo" href="/"> <img src="/img/logo.png" style="display:block" align="left"></div>
-            <div id="name" style="display:block">SparkChat</div>
-            <div id="header-text" align="right">
-                <a class="github-button" href="https://github.com/Oscaz/Spark-Chat" data-size="large" data-show-count="true" aria-label="Star Oscaz/Spark-Chat on GitHub">Star</a>
-                <a href="/contact">Contact</a>
-            </div>
-        </p>
-    </nav>
-</header>
-    <!-- Div containing instructions -->
-    <div id="info">
+<!-- Div that contains input box for username and button to enter-->
+<div id="user-info">
+    <div class="username-info">
         <h3>Enter your username to continue.</h3>
     </div>
-    <!-- Div that contains input box for username and button to enter-->
-    <div id="username">
-        <input id="username-box" placeholder="Username"/>
-        <button id="username-button" class="button-format">Enter</button>
+    <input id="username-box" placeholder="Username"/>
+    <button id="username-button" class="button-format">Enter</button>
+    <div class="avatar-info">
+        <h3>Select an avatar.</h3>
     </div>
+    <div id="avatar-select" class="icon-select" style="text-align: center "></div>
+</div>
+
+
 <script>
+
+var iconSelect;
+
+window.onload = function() {
+     iconSelect = new IconSelect("avatar-select",
+            {'selectedIconWidth':48,
+                'selectedIconHeight':48,
+                'selectedBoxPadding':3,
+                'iconsWidth':48,
+                'iconsHeight':48,
+                'boxIconSpace':3,
+                'vectoralIconNumber':4,
+                'horizontalIconNumber':4});
+    var icons = [];
+    for (var i = 0; i < 15; i++) {
+        icons.push({'iconFilePath':'img/avatar/' + i + '.png','iconValue':i});
+    }
+    iconSelect.refresh(icons);
+};
 
 // variable to make sure websocket is open before sending messages
 var waiting = true;
@@ -53,6 +62,7 @@ webSocket.onopen = function () {
 };
 
 webSocket.onmessage = function (message) {
+    if (waiting) return;
     // json variable received from websocket
     var data = JSON.parse(message.data);
     // if the content-type is not a response to a username being valid, return.
@@ -91,6 +101,7 @@ webSocket.onmessage = function (message) {
 id("username-box").addEventListener("keypress", function (e) {
     // If key is enter
     if (e.keyCode === 13) {
+        if (waiting) return;
         // check if box is empty, if so, error: invalid username and return
         if (id("username-box").value.trim() === "") {
             swal({
@@ -104,7 +115,7 @@ id("username-box").addEventListener("keypress", function (e) {
         // otherwise, send username through websocket and await response
         var username = {
             "type": "put-username",
-            "contents": id("username-box").value.trim()
+            "contents": id("username-box").value.trim() + "$" + iconSelect.getSelectedValue()
         };
 
         webSocket.send(JSON.stringify(username));
@@ -113,6 +124,7 @@ id("username-box").addEventListener("keypress", function (e) {
 
 // Search for clicks of button labelled Enter
 id("username-button").addEventListener("click", function () {
+    if (waiting) return;
     // check if input box is empty, if so, error: invalid username and return
     if (id("username-box").value.trim() === "") {
         swal({
@@ -126,7 +138,7 @@ id("username-button").addEventListener("click", function () {
     // otherwise, send username through websocket and await response
     var username = {
         "type": "put-username",
-        "contents": id("username-box").value.trim()
+        "contents": id("username-box").value.trim() + "$" + iconSelect.getSelectedValue()
     };
 
     webSocket.send(JSON.stringify(username));
@@ -144,4 +156,3 @@ function id(id) {
 }
 </script>
 </body>
-</html>

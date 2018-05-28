@@ -90,7 +90,7 @@ public class Main {
             post = new WebSocketPost("chat-message", createHtmlMessageFromConsole(message));
         }
         else
-            post = new WebSocketPost("chat-message", createHtmlMessageFromSender(connection.getUsername(), message));
+            post = new WebSocketPost("chat-message", createHtmlMessageFromSender(connection.getUsername(), message, connection.getAvatar()));
 
         System.out.println(post);
 
@@ -110,10 +110,10 @@ public class Main {
     }
 
     //Builds a HTML element with a sender-name, a message, and a timestamp, using J2HTML
-    private static String createHtmlMessageFromSender(String sender, String message) {
+    private static String createHtmlMessageFromSender(String sender, String message, int avatar) {
         return div(
                 div(attrs(".timestamp"), new SimpleDateFormat("HH:mm:ss").format(new Date())).withClass("datetime"),
-                p(img().withSrc("img/avatar1.png"), b(" " + sender + " says: ")),
+                div(p(img().withSrc("img/avatar/" + avatar + ".png"), (b(" " + sender + " says: ")))).withClass("message-user"),
                 p(message)
         ).withClass("messageBox").render();
 

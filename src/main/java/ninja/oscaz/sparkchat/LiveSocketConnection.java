@@ -12,6 +12,7 @@ class LiveSocketConnection {
     private String username;
     private String channel;
     private boolean isPrivate;
+    private int avatar;
 
     private Session session;
 
@@ -56,6 +57,14 @@ class LiveSocketConnection {
 
     void setSwitching(boolean switching) {
         this.switching = switching;
+    }
+
+    int getAvatar() {
+        return avatar;
+    }
+
+    void setAvatar(int avatar) {
+        this.avatar = avatar;
     }
 
     public boolean isPrivate() {
