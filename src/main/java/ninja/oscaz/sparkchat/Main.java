@@ -37,6 +37,7 @@ public class Main {
         Spark.get("/", WebServer.resolve("enter.vtl"));
         Spark.get("/index", WebServer.resolve("index.vtl"));
         Spark.get("/chatroom", WebServer.resolve("generalchat.vtl"));
+        Spark.get("/invaders", WebServer.resolve("invaders.vtl"));
 
         // A Post for client to receive authentication token (socket-id) responsible as a key for LiveSocketConnection
         Spark.post("/authenticate/", ((request, response) -> {
