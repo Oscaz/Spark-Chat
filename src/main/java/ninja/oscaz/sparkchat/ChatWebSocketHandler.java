@@ -49,7 +49,7 @@ public class ChatWebSocketHandler {
         System.out.println(message);
 
         // If message json type is support, trigger email.
-        if (message.getType().equalsIgnoreCase("support")) {
+        if (message.getContentType().equalsIgnoreCase("support")) {
             // Order is split by '$', [0] is message, [1] is email, [2] is name
             String[] support = message.getContents().split("\\$");
             if (support.length != 3) {
@@ -62,7 +62,7 @@ public class ChatWebSocketHandler {
         }
 
         // If message json type is authenticate, return socket-id to associate with session
-        else if (message.getType().equalsIgnoreCase("authenticate")) {
+        else if (message.getContentType().equalsIgnoreCase("authenticate")) {
             // update socket to fit authentication uuid
             Main.sockets.get(message.getContents()).setSession(user);
             // Set boolean switching so when user leaves chat room unannounced,
@@ -74,7 +74,7 @@ public class ChatWebSocketHandler {
         }
 
         // If message json type is choosing username, change LiveSocketConnection username to input
-        else if (message.getType().equalsIgnoreCase("put-username")) {
+        else if (message.getContentType().equalsIgnoreCase("put-username")) {
             // Find LiveSocketConnection that has session equal to currently requesting session
             Main.sockets.values().stream()
                     .filter(connection -> user.equals(connection.getSession()))
@@ -100,7 +100,7 @@ public class ChatWebSocketHandler {
         }
 
         // If message json type is sending message to channel, find all users of common channel (including sender) and send message
-        else if (message.getType().equalsIgnoreCase("chat-message")) {
+        else if (message.getContentType().equalsIgnoreCase("chat-message")) {
             Main.sockets.values().stream()
                     .filter(connection -> user.equals(connection.getSession()))
                     .findFirst()
@@ -112,7 +112,7 @@ public class ChatWebSocketHandler {
         // and set boolean switching to true, so as not to trigger a leave event within method onClose.
         // When user reconnects to said channel in page /generalchat, set switching to false to allow
         // leaving with notifications.
-        else if (message.getType().equalsIgnoreCase("switch-channel")) {
+        else if (message.getContentType().equalsIgnoreCase("switch-channel")) {
             Main.sockets.values().stream()
                     .filter(connection -> user.equals(connection.getSession()))
                     .findFirst()
@@ -142,7 +142,7 @@ public class ChatWebSocketHandler {
 
         // If json type is exit-chat, alert others of channel that said user has left chat, and set channel
         // of user to nothing.
-        else if (message.getType().equalsIgnoreCase("exit-chat")) {
+        else if (message.getContentType().equalsIgnoreCase("exit-chat")) {
             Main.sockets.values().stream()
                     .filter(connection -> user.equals(connection.getSession()))
                     .findFirst()

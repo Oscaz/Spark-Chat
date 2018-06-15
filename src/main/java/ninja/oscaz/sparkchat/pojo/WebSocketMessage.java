@@ -4,20 +4,20 @@ public class WebSocketMessage {
 
     // POJO for containing socket message (username, message, leave, join, etc)
 
-    private String type;
+    private String contentType;
     private String contents;
 
     public WebSocketMessage(String type, String contents) {
-        this.type = type;
+        this.contentType = type;
         this.contents = contents;
     }
 
-    public String getType() {
-        return type;
+    public String getContentType() {
+        return contentType;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 
     public String getContents() {

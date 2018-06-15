@@ -12,7 +12,7 @@
         <!-- Chat goes here -->
     </div>
     <div class="chatControls">
-        <input id="message" type="text" placeholder="Your message">
+        <input id="message" contentType="text" placeholder="Your message">
         <button id="send" class="button-format">Send</button>
         <button id="leave" class="button-format">Leave chat</button>
     </div>
@@ -35,7 +35,7 @@ webSocket.onopen = function () {
     console.log("SOCKET ID: " + authContent);
 
     var auth = {
-        "type": "authenticate",
+        "contentType": "authenticate",
         "contents": authContent
     };
 
@@ -51,7 +51,7 @@ id("leave").addEventListener("click", function () {
         return;
     }
     var leave = {
-        "type": "exit-chat",
+        "contentType": "exit-chat",
         "contents": "null"
     };
     swal({
@@ -85,7 +85,7 @@ function sendMessage(message) {
     }
     if (message !== "") {
         var data = {
-            "type": "chat-message",
+            "contentType": "chat-message",
             "contents": message
         };
 

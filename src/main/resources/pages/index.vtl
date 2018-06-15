@@ -3,8 +3,8 @@
     <body>
     <!-- Div containing controls for joining / creating a room (Private checkbox, Input box, button to trigger -->
     <div id="roomControls">
-        <input id="checkbox" type="checkbox"/> Private?
-        <input id="channel_name" type="text" placeholder="Create a room"/>
+        <input id="checkbox" contentType="checkbox"/> Private?
+        <input id="channel_name" contentType="text" placeholder="Create a room"/>
         <button id="join_general" class="button-format">Create / join chatroom</button>
     </div>
     <!-- List containing buttons for open chatrooms that contain the name and number online  -->
@@ -45,7 +45,7 @@ webSocket.onopen = function () {
 
     // Sending authentication token through to java
     var auth = {
-        "type": "authenticate",
+        "contentType": "authenticate",
         "contents": authContent
     };
 
@@ -74,7 +74,7 @@ function button(channelName) {
     }
 
     var switchChannel = {
-        "type": "switch-channel",
+        "contentType": "switch-channel",
         "contents": channelName + "$" + document.getElementById("checkbox").checked
     };
 
@@ -117,7 +117,7 @@ document.getElementById("channel_name").addEventListener("keypress", function (e
         }
 
         var switchChannel = {
-            "type": "switch-channel",
+            "contentType": "switch-channel",
             "contents": document.getElementById("channel_name").value + "$" + document.getElementById("checkbox").checked
         };
 
@@ -157,7 +157,7 @@ document.getElementById("join_general").addEventListener("click", function () {
     }
 
     var switchChannel = {
-        "type": "switch-channel",
+        "contentType": "switch-channel",
         "contents": document.getElementById("channel_name").value + "$" + document.getElementById("checkbox").checked
     };
 

@@ -51,7 +51,7 @@ webSocket.onopen = function () {
 
     // json varialbe to send authentication variable to java (so it can associate a session with socket id)
     var auth = {
-        "type": "authenticate",
+        "contentType": "authenticate",
         "contents": authContent
     };
 
@@ -65,7 +65,7 @@ webSocket.onmessage = function (message) {
     if (waiting) return;
     // json variable received from websocket
     var data = JSON.parse(message.data);
-    // if the content-type is not a response to a username being valid, return.
+    // if the content-contentType is not a response to a username being valid, return.
     if (data.contentType != "username-response") {
         return;
     }
@@ -114,7 +114,7 @@ id("username-box").addEventListener("keypress", function (e) {
         }
         // otherwise, send username through websocket and await response
         var username = {
-            "type": "put-username",
+            "contentType": "put-username",
             "contents": id("username-box").value.trim() + "$" + iconSelect.getSelectedValue()
         };
 
@@ -137,7 +137,7 @@ id("username-button").addEventListener("click", function () {
     }
     // otherwise, send username through websocket and await response
     var username = {
-        "type": "put-username",
+        "contentType": "put-username",
         "contents": id("username-box").value.trim() + "$" + iconSelect.getSelectedValue()
     };
 
