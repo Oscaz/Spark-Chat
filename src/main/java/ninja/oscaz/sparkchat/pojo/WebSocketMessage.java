@@ -6,7 +6,6 @@ public class WebSocketMessage {
 
     private String type;
     private String contents;
-    private boolean privateRoom;
 
     public WebSocketMessage(String type, String contents) {
         this.type = type;
@@ -27,14 +26,6 @@ public class WebSocketMessage {
 
     public void setContents(String contents) {
         this.contents = contents;
-    }
-
-    public boolean isPrivateRoom() {
-        return privateRoom;
-    }
-
-    public void setPrivateRoom(boolean privateRoom) {
-        this.privateRoom = privateRoom;
     }
 
 }
