@@ -12,7 +12,7 @@ class LiveSocketConnection {
     private String username;
     private String channel;
     private boolean isPrivate;
-    private int avatar;
+    private byte avatar;
 
     private Session session;
 
@@ -63,7 +63,7 @@ class LiveSocketConnection {
         return avatar;
     }
 
-    void setAvatar(int avatar) {
+    void setAvatar(byte avatar) {
         this.avatar = avatar;
     }
 

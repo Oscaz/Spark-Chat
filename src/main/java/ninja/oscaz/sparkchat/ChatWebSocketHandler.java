@@ -85,7 +85,7 @@ public class ChatWebSocketHandler {
                                 .filter(target -> target.getUsername().equalsIgnoreCase(message.getContents().split("\\$")[0]))
                                 .toArray().length == 0) {
                             connection.setUsername(message.getContents().split("\\$")[0]);
-                            connection.setAvatar(Integer.parseInt(message.getContents().split("\\$")[1]));
+                            connection.setAvatar(Byte.parseByte(message.getContents().split("\\$")[1]));
                             WebSocketPost post = new WebSocketPost("username-response", "true");
                             String json = Main.GSON.toJson(post);
                             this.sendMessage(json, connection.getSession());
